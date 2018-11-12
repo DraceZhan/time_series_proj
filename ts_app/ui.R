@@ -8,9 +8,8 @@ shinyUI(dashboardPage(
     sidebarMenu(
       menuItem("Intro", tabName = "markdown"),
       menuItem("Time Series Visualization", tabName = "dgraph"),
-      menuItem("ACF/PACF", tabName = 'acf_'),
+      menuItem("Diagnostics", tabName = 'diag'),
       menuItem("Periodogram", tabName = "freq"),
-      menuItem("Augmented Dickey-Fuller", tabName = 'adf_tests'),
       menuItem("Model Evaluations",tabName = 'eval_'),
       menuItem("ARIMA Model", tabName = 'arima'),
       menuItem("Data", tabName = "data", icon = icon("database"))
@@ -22,38 +21,32 @@ shinyUI(dashboardPage(
       tabItem(tabName = "markdown", h1(img(src="pic.jpg", height = 400)),
               h1(class = 'text-muted','Time Series Research Project'),
               p(paste("This is a project for STA9701 Time Series Forecasting by Drace Zhan"))),
-      tabItem(tabName = "dgraph", 
+      tabItem(tabName = "dgraph", fluidRow(
               p(class = "text-muted",paste("Visualizing the Data"
-              )),h1(dygraphOutput("dygraph1")),h1(dygraphOutput("dygraph2")), h1(dygraphOutput("dygraph3"))
-              ),
-      tabItem(tabName = "acf_", fluidRow(box(width = 12, title = "Controls",
+              )),h1(dygraphOutput("dygraph1")),h1(dygraphOutput("dygraph2")),
+              h1(plotOutput("rolling_average"))
+              )),
+      tabItem(tabName = "diag", fluidRow(box(width = 12, title = "Controls",
                                              selectInput(inputId = "dataset",
                                                          label = "Original/Differenced",
                                                          choices = list("Original",
-                                                                        "Differenced at lag = 7"))
-      )),
-      p(class = "text-muted",paste("ACF/PACF"
-      )),h1(plotOutput('acf')), h1(plotOutput('pacf')), h1(verbatimTextOutput("summary"))
-      ),
+                                                                        "Differenced at lag = 7")),
+                                             selectInput(inputId = "val_",
+                                                         label = "Transformed/Boxcox",
+                                                         choices = list("Visitors" = 2,
+                                                                        "Box Cox Transformed Visitors" = 3)),
+                                                         p(class = "text-muted",paste("ACF/PACF"
+                                                         )),h1(plotOutput('acf')), h1(plotOutput('pacf')), 
+                      p(class = "text-muted",paste("Augmented Dickey-Fuller Test to Evaluate Stationary"
+                                                         )),h1(verbatimTextOutput("adf_")),
+                      p(class = "text-muted",paste("KPSS Test to Evaluate Unit Root, Failure to Reject Augments Dickey-Fuller Alternate"
+                      )),h1(verbatimTextOutput("kpss_")),
+      h1(verbatimTextOutput("summary"))
+      ))),
       tabItem(tabName = "freq", 
               p(class = "text-muted",paste("Periodogram for Evaluation of Freq/Seasonality"
               )),h1(plotOutput('period_')), infoBox(title = 'Seasonality Observed', tableOutput('time_freq'), width = 6)
       ),
-      tabItem(tabName = "adf_tests", 
-              fluidRow(p(class = "text-muted",paste("Augmented Dickey-Fuller Test to Evaluate Stationary"
-              )),
-              box(width = 12, selectInput(inputId = "dataset_",
-                                                      label = "Original/Differenced",
-                                                      choices = list("Original",
-                                                                     "Differenced at lag = 7")),
-                              selectInput(inputId = "val_",
-                                          label = "Transformed/Boxcox",
-                                          choices = list("Visitors" = 2,
-                                                         "Box Cox Transformed Visitors" = 3)),
-                              h1(verbatimTextOutput("adf_"))
-              )
-    )
-              ),
       tabItem(tabName = "eval_", 
             fluidRow(p(class = "text-muted",paste("Evaluations for AR(p) Model - calculated using Yule-Walker")),
                      box(width = 12, sliderInput("p_", "Select p (1,8, 15 were tested prior as best values",

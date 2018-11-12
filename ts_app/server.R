@@ -10,8 +10,10 @@ shinyServer(function(input, output) {
     dygraph(air_reserve_xts[,c(3)]) %>% dySeries(
       'bc_visitors', label = 'Box-Cox Transformed Total Visitors') %>%dyRangeSelector(height = 20) %>%
       dyHighlight(highlightSeriesOpts = list(strokeWidth = 1)) %>% dyOptions(logscale=F)})
-  output$dygraph3 <-renderDygraph({dygraph(air_reserve_xts$visitors, main = "Rolling Five Days") %>% 
-                                    dyRoller(rollPeriod = 5)})
+  output$rolling_average <-renderPlot(ggplot(air_reserve, aes(x= Date)) + geom_line(
+    aes(y= visitors, color = "#00ba38"), size =1) + geom_line(
+    aes(y= rolling_week, color = "#f8766d"), size =1)+ theme_bw()+scale_color_discrete(name = "Value",
+      labels = c("Visitors", "Rolling Weekly")))
 
   datasetInput <- reactive({switch(input$dataset, "Original" = air_reserve_ts,
                                    "Differenced at lag = 7" = ts_diff)})
@@ -20,21 +22,20 @@ shinyServer(function(input, output) {
     summary(ds)
   })
   
-  output$acf <- renderPlot({acf(datasetInput()[,c(3)], main='ACF')})
-  output$pacf <- renderPlot({pacf(datasetInput()[,c(3)], main='PACF')})
+  output$acf <- renderPlot({acf(datasetInput()[,as.numeric(input$val_)], main='ACF')})
+  output$pacf <- renderPlot({pacf(datasetInput()[,as.numeric(input$val_)], main='PACF')})
   
     
   output$period_ <- renderPlot(periodogram(
     air_reserve_ts[,c(2)],log='yes',plot=TRUE,ylab="Periodogram", xlab="Frequency",lwd=2))
   output$time_freq <- renderTable({time_conv}, colnames = F)
   
-  datasetInput <- reactive({switch(input$dataset_, "Original" = air_reserve_ts,
-                                   "Differenced at lag = 7" = ts_diff)})
-  
+
   output$adf_ <- renderPrint({
     adf.test(datasetInput()[,as.numeric(input$val_)])
     }
     )
+  output$kpss_ <- renderPrint({kpss.test(datasetInput()[,as.numeric(input$val_)])})
   
   output$unit_root <-renderPlot(autoplot(ar(ts_diff[,c(3)], method ='yule-walker', aic=input$bool_, order.max = input$p_)))
   output$box_lj <-renderPrint(Box.test(ar(ts_diff[,c(3)], method ='yule-walker', aic=input$bool_, order.max = input$p_)$resid))

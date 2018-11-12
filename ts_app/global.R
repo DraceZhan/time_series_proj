@@ -10,7 +10,11 @@ library(TSA)
 library(ggplot2)
 library(Metrics)
 library(shinydashboard)
+library(zoo)
 library(DT)
+
+#ggplot2 theme
+theme_set(theme_bw())
 
 #setting Rstudio margins to avoid errors from sarima
 par(mar=c(1,1,1,1))
@@ -24,6 +28,10 @@ bc_lambda = BoxCox.lambda(air_reserve_full$visitors)
 air_reserve_full$bc_visitors = BoxCox(air_reserve_full$visitors, lambda = bc_lambda)
 air_reserve_holdout = tail(air_reserve_full, n = 30)
 air_reserve = head(air_reserve_full, n =448)
+air_reserve$rolling_week = rollmean(zoo(air_reserve$visitors), 7, fill = NA*7)
+
+#Note the data has a "holiday anomalies in that must be investigated further, large growth from July 2016, large dip in Jan 2017)
+
 
 
 air_reserve_xts = xts(air_reserve, order.by = air_reserve$Date)
